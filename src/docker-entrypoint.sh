@@ -13,9 +13,7 @@ else
   SECRET_HASH="(secret not found)"
 fi
 
-# Touch and record mtime in persistent volume
-mkdir -p "$(dirname "${DATA_FILE}")"
-touch "${DATA_FILE}"
+# Read mtime from persistent volume (written by pvc-init)
 DATA_MTIME=$(date -r "${DATA_FILE}" -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || echo "unknown")
 
 # Render template
