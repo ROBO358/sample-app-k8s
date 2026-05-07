@@ -16,9 +16,13 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     outputs:
-      short_sha: ${{ steps.meta.outputs.version }}
+      image_tag: ${{ steps.sha.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: sha
+        run: echo "tag=sha-$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -30,22 +34,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract image metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=sha,prefix=sha-,format=short
-            type=raw,value=main
-
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: ./src
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ghcr.io/robo358/sample-app-k8s:${{ steps.sha.outputs.tag }}
+            ghcr.io/robo358/sample-app-k8s:main
           platforms: linux/amd64
           build-args: |
             BUILT_AT=${{ github.event.head_commit.timestamp }}
@@ -66,10 +62,8 @@ jobs:
 
       - name: Update image tag in manifests
         run: |
-          SHORT_SHA="${{ needs.build-and-push.outputs.short_sha }}"
           cd manifests
-          kustomize edit set image \
-            ghcr.io/${{ github.repository }}=ghcr.io/${{ github.repository }}:${SHORT_SHA}
+          kustomize edit set image ghcr.io/robo358/sample-app-k8s:${{ needs.build-and-push.outputs.image_tag }}
 
       - name: Commit and push if changed
         run: |
@@ -77,5 +71,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git diff --quiet && exit 0
           git add manifests/kustomization.yaml
-          git commit -m "chore(image): bump to ${{ needs.build-and-push.outputs.short_sha }} [skip ci]"
+          git commit -m "chore(image): bump to ${{ needs.build-and-push.outputs.image_tag }} [skip ci]"
           git push

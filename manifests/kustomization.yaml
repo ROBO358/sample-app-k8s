@@ -4,21 +4,18 @@ kind: Kustomization
 namespace: sample-app
 
 resources:
-- externalsecret.yaml
-- certificate.yaml
-- pvc.yaml
-- deployment.yaml
-- service.yaml
-- gateway.yaml
-- httproute.yaml
-- httproute-tunnel.yaml
-- ciliumnetworkpolicy.yaml
-- servicemonitor.yaml
-- prometheusrule.yaml
+  - externalsecret.yaml
+  - certificate.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - gateway.yaml
+  - httproute.yaml
+  - httproute-tunnel.yaml
+  - ciliumnetworkpolicy.yaml
+  - servicemonitor.yaml
+  - prometheusrule.yaml
 
 images:
-- name: ghcr.io/ROBO358/sample-app-k8s
-  newName: ghcr.io/ROBO358/sample-app-k8s
-  newTag: main
-- name: ghcr.io/robo358/sample-app-k8s
-  newTag: main
+  - name: ghcr.io/robo358/sample-app-k8s
+    newTag: main
