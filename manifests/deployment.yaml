@@ -55,6 +55,8 @@ spec:
               readOnly: true
             - name: data
               mountPath: /var/lib/sample-app
+            - name: html
+              mountPath: /usr/share/nginx/html
           livenessProbe:
             httpGet:
               path: /
@@ -108,3 +110,5 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: sample-app-data
+        - name: html
+          emptyDir: {}
