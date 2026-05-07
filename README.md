@@ -28,7 +28,7 @@ A simple nginx web page that:
 ## Repository structure
 
 ```
-src/                        # Source code built into ghcr.io/ROBO358/sample-app-k8s
+src/                        # Source code built into ghcr.io/robo358/sample-app-k8s
 ├── Dockerfile              # FROM nginxinc/nginx-unprivileged:1.27-alpine
 ├── nginx.conf              # global nginx config (unprivileged temp paths)
 ├── default.conf            # server block (port 8080 + /stub_status)
@@ -57,7 +57,7 @@ manifests/                  # Kubernetes manifests (applied by Flux via homelab-
 
 GitHub Actions triggers on `push to main` when `src/**` changes:
 
-1. Build `ghcr.io/ROBO358/sample-app-k8s:sha-<short>` and `:main`
+1. Build `ghcr.io/robo358/sample-app-k8s:sha-<short>` and `:main`
 2. Update `manifests/kustomization.yaml` `images[0].newTag` to `sha-<short>` (`[skip ci]` commit)
 3. Flux in `yh-cluster` picks up the new tag within ~1 minute
 
@@ -74,12 +74,9 @@ rm -rf ~/k8s/<app-name>-k8s/.git
 cd ~/k8s/<app-name>-k8s
 
 # Replace every occurrence of "sample-app" with your app name
+# (covers manifests/*.yaml including image name in kustomization.yaml and build.yml)
 APP=<app-name>
 sed -i "s/sample-app/${APP}/g" manifests/*.yaml README.md .github/workflows/build.yml
-
-# Replace image name
-sed -i "s|ghcr.io/ROBO358/sample-app-k8s|ghcr.io/ROBO358/${APP}-k8s|g" \
-  manifests/kustomization.yaml .github/workflows/build.yml
 
 # Replace Cilium Gateway LB IP with your chosen IP
 sed -i "s/192.168.1.102/192.168.1.XXX/g" manifests/gateway.yaml
