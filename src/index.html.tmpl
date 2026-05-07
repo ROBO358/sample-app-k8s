@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sample-app</title>
+  <style>
+    body { font-family: monospace; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { border-bottom: 2px solid #333; }
+    dt { font-weight: bold; margin-top: 1rem; }
+    dd { margin-left: 1rem; word-break: break-all; }
+    code { background: #f4f4f4; padding: 0.2em 0.4em; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>sample-app @ yh-cluster</h1>
+  <dl>
+    <dt>Secret hash (SHA-256 of eso-smoke-test/notesPlain)</dt>
+    <dd><code>__SECRET_HASH__</code></dd>
+
+    <dt>Pod name</dt>
+    <dd><code>__HOSTNAME__</code></dd>
+
+    <dt>Image built at</dt>
+    <dd><code>__BUILT_AT__</code></dd>
+
+    <dt>Persisted file mtime (Longhorn PVC)</dt>
+    <dd><code>__DATA_MTIME__</code></dd>
+  </dl>
+</body>
+</html>

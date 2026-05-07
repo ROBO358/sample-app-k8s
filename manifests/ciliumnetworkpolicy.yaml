@@ -1,0 +1,55 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: sample-app
+spec:
+  endpointSelector:
+    matchLabels:
+      app: sample-app
+  ingress:
+    # Allow intra-namespace traffic
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: sample-app
+    # Allow Cilium Gateway proxy (LAN HTTPS)
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    # Allow cloudflared tunnel pods (Cloudflare Tunnel)
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: cloudflare-gateway
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    # Allow Prometheus to scrape nginx-prometheus-exporter
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "9113"
+              protocol: TCP
+  egress:
+    # Allow DNS
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    # Allow ESO to pull secrets (external-secrets namespace)
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: external-secrets
+    # Allow access to kube-apiserver (for ESO / cert-manager watchers)
+    - toEntities:
+        - kube-apiserver

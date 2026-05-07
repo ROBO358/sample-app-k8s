@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sample-app
+  labels:
+    release: monitoring
+    app.kubernetes.io/part-of: sample-app
+spec:
+  groups:
+    - name: sample-app
+      rules:
+        - alert: SampleAppDown
+          expr: up{job="sample-app"} == 0
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "sample-app is down"
+            description: "Prometheus cannot scrape sample-app in namespace {{ $labels.namespace }}."
+
+        - alert: SampleAppNoConnections
+          expr: nginx_connections_active{job="sample-app"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "sample-app has no active connections"
+            description: "nginx active connections have been 0 for 10 minutes in namespace {{ $labels.namespace }}."

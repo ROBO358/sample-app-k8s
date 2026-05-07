@@ -1,0 +1,14 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sample-app-tunnel
+spec:
+  parentRefs:
+    - name: yh-cluster
+      namespace: cloudflare-gateway
+  hostnames:
+    - sample-app-yh-k8s.tsuru.run
+  rules:
+    - backendRefs:
+        - name: sample-app
+          port: 80

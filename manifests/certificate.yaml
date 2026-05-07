@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sample-app-tls
+spec:
+  secretName: sample-app-tls
+  commonName: sample-app.yh.k8s.tsuru.run
+  dnsNames:
+    - sample-app.yh.k8s.tsuru.run
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  duration: 2160h
+  renewBefore: 720h

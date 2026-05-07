@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-app
+  labels:
+    app: sample-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      initContainers:
+        # Demonstrates init container + Longhorn PVC write pattern.
+        # Touches a sentinel file in the persistent volume so the main container
+        # can display last-modified time as proof of persistence across restarts.
+        - name: pvc-init
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              touch /data/.mtime
+              echo "pvc-init: sentinel file touched at $(date -u)"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 65534
+            capabilities:
+              drop: [ALL]
+
+      containers:
+        - name: nginx
+          # Image is built from src/ and pushed to ghcr.io by GitHub Actions.
+          # manifests/kustomization.yaml pins the exact tag; this is the fallback.
+          image: ghcr.io/robo358/sample-app-k8s:main
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: secret-eso
+              mountPath: /eso
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/sample-app
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            capabilities:
+              drop: [ALL]
+
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.4.0
+          args:
+            - --nginx.scrape-uri=http://127.0.0.1:8080/stub_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: [ALL]
+
+      volumes:
+        - name: secret-eso
+          secret:
+            secretName: sample-app-secret
+        - name: data
+          persistentVolumeClaim:
+            claimName: sample-app-data
