@@ -99,7 +99,7 @@ These choices are non-obvious and matter when using this repo as a template:
 | `emptyDir` at `/usr/share/nginx/html` | nginx container | The directory inside the image is root-owned; entrypoint writes `index.html` there at startup |
 | `entrypoint` reads PVC, never writes | `docker-entrypoint.sh` | `pvc-init` (UID 65534) owns `.mtime`; nginx (UID 101) can't update it — entrypoint reads mtime with `date -r` |
 | `strategy.rollingUpdate.maxSurge: 0` | Deployment | RWO PVC causes RollingUpdate deadlock (new pod can't attach volume until old pod releases it, but old pod won't terminate until new pod is Ready); `maxSurge: 0` makes the old pod terminate first |
-| `strategy.type: RollingUpdate` (not `Recreate`) | Deployment | `Recreate` cannot be applied via SSA when the server has set default `rollingUpdate` fields; `maxSurge: 0` achieves the same effect |
+| `strategy.type: RollingUpdate` (not `Recreate`) | Deployment | Kubernetes validation forbids `type=Recreate` and `rollingUpdate` coexisting. A Deployment first created without `strategy` has server-owned `rollingUpdate` defaults; patching only `type: Recreate` via SSA leaves those defaults in place and fails validation. `maxSurge: 0` achieves the same behaviour without changing `type`, avoiding the conflict |
 
 ## Prerequisites in the cluster
 
