@@ -91,6 +91,19 @@ git push -u origin main
 
 Then follow Steps 4-8 in the homelab-gitops README.
 
+## Deployment design notes
+
+These choices are non-obvious and matter when using this repo as a template:
+
+| Topic | Setting | Reason |
+|---|---|---|
+| `securityContext.runAsUser: 101` | nginx container | `runAsNonRoot: true` requires a numeric UID; `nginx-unprivileged` runs as UID 101 |
+| `securityContext.fsGroup: 101` | pod spec | Longhorn volumes are root-owned by default; `fsGroup` chowns the mount to GID 101 so all containers can write |
+| `emptyDir` at `/usr/share/nginx/html` | nginx container | The directory inside the image is root-owned; entrypoint writes `index.html` there at startup |
+| `entrypoint` reads PVC, never writes | `docker-entrypoint.sh` | `pvc-init` (UID 65534) owns `.mtime`; nginx (UID 101) can't update it — entrypoint reads mtime with `date -r` |
+| `strategy.rollingUpdate.maxSurge: 0` | Deployment | RWO PVC causes RollingUpdate deadlock (new pod can't attach volume until old pod releases it, but old pod won't terminate until new pod is Ready); `maxSurge: 0` makes the old pod terminate first |
+| `strategy.type: RollingUpdate` (not `Recreate`) | Deployment | `Recreate` cannot be applied via SSA when the server has set default `rollingUpdate` fields; `maxSurge: 0` achieves the same effect |
+
 ## Prerequisites in the cluster
 
 These must be in place before this app can be deployed (all managed by homelab-gitops):
