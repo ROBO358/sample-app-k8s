@@ -18,4 +18,4 @@ resources:
 
 images:
 - name: ghcr.io/robo358/sample-app-k8s
-  newTag: sha-ab9e62c
+  newTag: sha-8343eb2
