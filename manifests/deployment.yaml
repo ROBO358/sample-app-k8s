@@ -14,6 +14,8 @@ spec:
       labels:
         app: sample-app
     spec:
+      securityContext:
+        fsGroup: 101
       initContainers:
         # Demonstrates init container + Longhorn PVC write pattern.
         # Touches a sentinel file in the persistent volume so the main container
