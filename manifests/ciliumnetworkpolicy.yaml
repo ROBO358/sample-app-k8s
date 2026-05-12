@@ -29,6 +29,7 @@ spec:
     # Allow Prometheus to scrape nginx-prometheus-exporter
     - fromEndpoints:
         - matchLabels:
+            io.kubernetes.pod.namespace: monitoring
             app.kubernetes.io/name: prometheus
       toPorts:
         - ports:
