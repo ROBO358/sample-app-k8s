@@ -46,10 +46,3 @@ spec:
               protocol: UDP
             - port: "53"
               protocol: TCP
-    # Allow ESO to pull secrets (external-secrets namespace)
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: external-secrets
-    # Allow access to kube-apiserver (for ESO / cert-manager watchers)
-    - toEntities:
-        - kube-apiserver
