@@ -1,4 +1,4 @@
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.29-alpine
 
 ARG BUILT_AT
 ENV BUILT_AT=${BUILT_AT:-unknown}
